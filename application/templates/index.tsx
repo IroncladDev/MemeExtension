@@ -115,11 +115,11 @@ export default function Templates() {
   }, [query, page]);
 
   return (
-    <View css={[rcss.flex.column]}>
+    <View css={[rcss.flex.column, rcss.flex.grow(1)]}>
       <View
         css={[
-          rcss.flex.column,
-          rcss.colWithGap(8),
+          rcss.flex.row,
+          rcss.rowWithGap(8),
           rcss.p(8),
           rcss.border({
             direction: "bottom",
@@ -127,61 +127,50 @@ export default function Templates() {
           }),
         ]}
       >
-        <View css={[rcss.flex.row, rcss.rowWithGap(8), rcss.align.center]}>
-          <Text variant="subheadDefault">Meme Generator</Text>
+        <Input
+          placeholder="Find a meme"
+          css={rcss.flex.grow(1)}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </View>
 
-          <View css={rcss.flex.grow(1)} />
-
-          <View css={[rcss.flex.row, rcss.rowWithGap(8)]}>
-            <Button
-              text="First"
-              iconLeft={<ChevronDoubleLeft />}
-              onClick={() => setPage(1)}
-              disabled={loading || page === 1}
-            />
-            <Button
-              text="Prev"
-              iconLeft={<ChevronLeft />}
-              disabled={!prevPage || loading}
-              onClick={() => setPage(page - 1)}
-            />
-            <Button
-              text="Next"
-              iconRight={<ChevronRight />}
-              disabled={!nextPage || loading}
-              onClick={() => setPage(page + 1)}
-            />
-          </View>
-        </View>
-
-        <View css={[rcss.flex.row, rcss.rowWithGap(8)]}>
-          <Input
-            placeholder="Enter to Search"
-            css={rcss.flex.grow(1)}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <Button colorway="primary" text="Search" />
+      <View css={[rcss.flex.grow(1), rcss.position.relative]}>
+        <View
+          css={[
+            rcss.position.absolute,
+            rcss.top(0),
+            rcss.left(0),
+            rcss.right(0),
+            rcss.bottom(0),
+            rcss.overflowY("auto"),
+            rcss.flex.row,
+            rcss.p(8),
+            rcss.justify.center,
+            {
+              flexWrap: "wrap" as "wrap",
+              gap: 8,
+            },
+          ]}
+        >
+          {memes.map(({ title, imageUrl }, i) => (
+            <Meme key={i} title={title} imageUrl={imageUrl} />
+          ))}
         </View>
       </View>
 
       <View
         css={[
           rcss.flex.row,
+          rcss.center,
+          rcss.rowWithGap(8),
           rcss.p(8),
-          rcss.justify.center,
-          {
-            flexWrap: "wrap" as "wrap",
-            gap: 8,
-          },
+          rcss.border({
+            direction: "top",
+            color: "backgroundHigher",
+          }),
         ]}
       >
-        {memes.map(({ title, imageUrl }, i) => (
-          <Meme key={i} title={title} imageUrl={imageUrl} />
-        ))}
-      </View>
-
-      <View css={[rcss.flex.row, rcss.rowWithGap(8)]}>
         <Button
           text="First"
           iconLeft={<ChevronDoubleLeft />}
