@@ -2,7 +2,7 @@
   "name": "Meme Generator",
   "description": "The Meme Generator Extension allows you to add captions and images to memes directly from the workspace from imgflip",
   "version": "dontcry",
-  "tags": ["stream", "repl"],
+  "tags": ["funny", "meme", "generator", "for", "nerds"],
   "icon": "/icon.png",
   "website": "https://tv.repl.page/",
   "longDescription": null,
