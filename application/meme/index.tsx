@@ -11,8 +11,7 @@ import {
   IconButton,
   interactive,
 } from "application/rui";
-import { ArrowLeft } from "application/ui/icons";
-import { motion } from "framer-motion";
+import { motion, PanInfo, useMotionValue, useTransform } from "framer-motion";
 import DownloadIcon from "application/ui/icons/Download";
 import CopyIcon from "application/ui/icons/Copy";
 import LogoIcon from "application/ui/icons/Logo";
@@ -20,8 +19,8 @@ import React, {
   RefObject,
   useRef,
   useState,
-  useEffect,
   ChangeEvent,
+  useCallback,
 } from "react";
 import PlusIcon from "application/ui/icons/Plus";
 import ChevronRightIcon from "application/ui/icons/ChevronRight";
@@ -30,6 +29,7 @@ import PaletteIcon from "application/ui/icons/Palette";
 import downloadjs from "downloadjs";
 import html2canvas from "html2canvas";
 import { messages, fs } from "@replit/extensions";
+import ChevronLeftIcon from "application/ui/icons/ChevronLeft";
 
 const fonts = [
   "Impact",
@@ -90,24 +90,74 @@ interface Image {
 function TextBoxDragComponent({
   parentRef,
   box,
-  updateBox,
+  setTextBoxes,
+  index,
 }: {
   parentRef: RefObject<HTMLDivElement>;
   box: TextBox;
-  updateBox: (b: TextBox) => void;
+  setTextBoxes: React.Dispatch<React.SetStateAction<Array<TextBox | Image>>>;
+  index: number;
 }) {
   const [initialTop] = useState(box.initialTop);
+  const dragRef = useRef<HTMLDivElement>(null);
+  const textContainer = useRef<HTMLSpanElement>(null);
+
+  const boxWidth = useMotionValue(box.width);
+  const width = useTransform(boxWidth, (w) => `${w}%`);
+  const boxLeft = useMotionValue(0);
+
+  const dragRight = useCallback(
+    (_, info: PanInfo) => {
+      const containerBound = parentRef.current?.getBoundingClientRect();
+      const dragBound = dragRef.current?.getBoundingClientRect();
+
+      if (containerBound && dragBound) {
+        const newWidthPx = dragBound.width + info.delta.x;
+        const newWidth = (newWidthPx / containerBound.width) * 100;
+
+        if (newWidth > 0 && newWidth < 100) {
+          boxWidth.set(newWidth);
+        }
+      }
+    },
+    [dragRef]
+  );
+
+  const dragLeft = useCallback(
+    (_, info: PanInfo) => {
+      const containerBound = parentRef.current?.getBoundingClientRect();
+      const dragBound = dragRef.current?.getBoundingClientRect();
+
+      if (containerBound && dragBound) {
+        const newWidthPx = dragBound.width - info.delta.x;
+        const newWidth = (newWidthPx / containerBound.width) * 100;
+
+        if (newWidth > 0 && newWidth < 100) {
+          boxWidth.set(newWidth);
+          boxLeft.set(boxLeft.get() + info.delta.x);
+        }
+      }
+    },
+    [dragRef]
+  );
 
   return (
     <motion.div
       drag
-      dragConstraints={parentRef}
       style={{
         position: "absolute",
         top: initialTop,
-        width: box.width + "%",
+        width,
         height: "auto",
         textAlign: box.textAlign,
+        left: boxLeft,
+      }}
+      onClick={() => {
+        setTextBoxes((boxes) =>
+          boxes.map((b, i) =>
+            i === index ? { ...b, updating: true } : { ...b, updating: false }
+          )
+        );
       }}
       dragMomentum={false}
       animate={{
@@ -123,23 +173,118 @@ function TextBoxDragComponent({
       whileDrag={{
         backgroundColor: `rgba(0, 0, 0, 0.3)`,
       }}
+      ref={dragRef}
     >
-      <motion.span
+      <span
         style={{
+          display: "inline-block",
           fontSize: box.size + "px",
           color: box.color,
           opacity: box.opacity,
           textShadow: `0 0 ${box.outlineThickness}px ${box.outlineColor}`,
           fontFamily: box.font,
           wordBreak: "break-word",
+          transform: `rotate(${box.rotate}deg)`,
         }}
+        ref={textContainer}
       >
-        {box.textStyle === "bold" ? <strong>{box.text}</strong> : null}
-        {box.textStyle === "italic" ? <em>{box.text}</em> : null}
-        {box.textStyle !== "bold" && box.textStyle !== "italic"
-          ? box.text
-          : null}
-      </motion.span>
+        {box.textStyle === "bold" ? (
+          <strong
+            dangerouslySetInnerHTML={{
+              __html: box.text
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll("\n", "<br>"),
+            }}
+          />
+        ) : null}
+        {box.textStyle === "italic" ? (
+          <em
+            dangerouslySetInnerHTML={{
+              __html: box.text
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll("\n", "<br>"),
+            }}
+          />
+        ) : null}
+        {box.textStyle !== "bold" && box.textStyle !== "italic" ? (
+          <span
+            dangerouslySetInnerHTML={{
+              __html: box.text
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll("\n", "<br>"),
+            }}
+          />
+        ) : null}
+      </span>
+
+      {box.updating ? (
+        <motion.div
+          drag="x"
+          dragConstraints={dragRef}
+          dragElastic={false}
+          dragMomentum={false}
+          onDrag={dragLeft}
+          css={[
+            rcss.position.absolute,
+            rcss.top(`50%`),
+            rcss.left(0),
+            rcss.height("100%"),
+            rcss.maxHeight(48),
+            rcss.flex.row,
+            rcss.py(8),
+            rcss.px(4),
+            {
+              transform: `translateX(0px) translateY(-50%) !important`,
+              background: "rgba(0, 0, 0, 0.25)",
+              cursor: "col-resize",
+            },
+          ]}
+        >
+          <div
+            css={[
+              {
+                borderRight: `solid 2px white`,
+              },
+            ]}
+          />
+        </motion.div>
+      ) : null}
+
+      {box.updating ? (
+        <motion.div
+          drag="x"
+          dragConstraints={dragRef}
+          dragElastic={false}
+          dragMomentum={false}
+          onDrag={dragRight}
+          css={[
+            rcss.position.absolute,
+            rcss.top("50%"),
+            rcss.right(0),
+            rcss.height("100%"),
+            rcss.maxHeight(48),
+            rcss.flex.row,
+            rcss.py(8),
+            rcss.px(4),
+            {
+              transform: `translateX(0px) translateY(-50%) !important`,
+              background: "rgba(0, 0, 0, 0.25)",
+              cursor: "col-resize",
+            },
+          ]}
+        >
+          <div
+            css={[
+              {
+                borderRight: `solid 2px white`,
+              },
+            ]}
+          />
+        </motion.div>
+      ) : null}
     </motion.div>
   );
 }
@@ -147,24 +292,108 @@ function TextBoxDragComponent({
 function ImageDragComponent({
   parentRef,
   img,
-  updateImg,
+  index,
+  setTextBoxes,
 }: {
   parentRef: RefObject<HTMLDivElement>;
   img: Image;
-  updateImg: (b: Image) => void;
+  setTextBoxes: React.Dispatch<React.SetStateAction<Array<TextBox | Image>>>;
+  index: number;
 }) {
+  const dragRef = useRef<HTMLDivElement>(null);
+
+  const boxWidth = useMotionValue(img.width);
+  const width = useTransform(boxWidth, (w) => `${w}%`);
+  const boxHeight = useMotionValue(img.height);
+  const height = useTransform(boxHeight, (h) => `${h}%`);
+  const boxLeft = useMotionValue(
+    (parentRef.current?.clientWidth || 0) / 2 - img.width / 2
+  );
+  const boxTop = useMotionValue(
+    (parentRef.current?.clientHeight || 0) / 2 - img.height / 2
+  );
+
+  const dragRight = useCallback(
+    (_, info: PanInfo) => {
+      const containerBound = parentRef.current?.getBoundingClientRect();
+      const dragBound = dragRef.current?.getBoundingClientRect();
+
+      if (containerBound && dragBound) {
+        const newWidthPx = dragBound.width + info.delta.x;
+        const newWidth = (newWidthPx / containerBound.width) * 100;
+
+        if (newWidth > 5 && newWidth < 100) {
+          boxWidth.set(newWidth);
+        }
+      }
+    },
+    [dragRef]
+  );
+
+  const dragBottom = useCallback(
+    (_, info: PanInfo) => {
+      const containerBound = parentRef.current?.getBoundingClientRect();
+      const dragBound = dragRef.current?.getBoundingClientRect();
+
+      if (containerBound && dragBound) {
+        const newHeightPx = dragBound.height + info.delta.y;
+        const newHeight = (newHeightPx / containerBound.height) * 100;
+
+        if (newHeight > 5 && newHeight < 100) {
+          boxHeight.set(newHeight);
+        }
+      }
+    },
+    [dragRef]
+  );
+
+  const dragLeft = useCallback(
+    (_, info: PanInfo) => {
+      const containerBound = parentRef.current?.getBoundingClientRect();
+      const dragBound = dragRef.current?.getBoundingClientRect();
+
+      if (containerBound && dragBound) {
+        const newWidthPx = dragBound.width - info.delta.x;
+        const newWidth = (newWidthPx / containerBound.width) * 100;
+
+        if (newWidth > 5 && newWidth < 100) {
+          boxWidth.set(newWidth);
+          boxLeft.set(boxLeft.get() + info.delta.x);
+        }
+      }
+    },
+    [dragRef]
+  );
+
+  const dragTop = useCallback(
+    (_, info: PanInfo) => {
+      const containerBound = parentRef.current?.getBoundingClientRect();
+      const dragBound = dragRef.current?.getBoundingClientRect();
+
+      if (containerBound && dragBound) {
+        const newHeightPx = dragBound.height - info.delta.y;
+        const newHeight = (newHeightPx / containerBound.height) * 100;
+
+        if (newHeight > 5 && newHeight < 100) {
+          boxHeight.set(newHeight);
+          boxTop.set(boxTop.get() + info.delta.y);
+        }
+      }
+    },
+    [dragRef]
+  );
+
   return (
-    <motion.img
-      src={String(img.src)}
+    <motion.div
       drag
-      dragConstraints={parentRef}
       style={{
         position: "absolute",
-        top: `calc(50% - ${img.height / 2}px)`,
-        left: `calc(50% - ${img.width / 2}px)`,
-        width: img.width + "%",
-        height: img.height + "%",
+        width,
+        height,
+        top: boxTop,
+        left: boxLeft,
       }}
+      ref={dragRef}
       dragMomentum={false}
       animate={{
         backgroundColor: img.updating ? `rgba(0, 0, 0, 0.1)` : undefined,
@@ -179,7 +408,156 @@ function ImageDragComponent({
       whileDrag={{
         backgroundColor: `rgba(0, 0, 0, 0.3)`,
       }}
-    />
+      onClick={() => {
+        setTextBoxes((boxes) =>
+          boxes.map((b, i) =>
+            i === index ? { ...b, updating: true } : { ...b, updating: false }
+          )
+        );
+      }}
+    >
+      <motion.img
+        src={String(img.src)}
+        style={{
+          width: "100%",
+          height: "100%",
+          rotate: img.rotate,
+        }}
+        draggable="false"
+      />
+
+      {img.updating ? (
+        <motion.div
+          drag="x"
+          dragConstraints={dragRef}
+          dragElastic={false}
+          dragMomentum={false}
+          onDrag={dragLeft}
+          css={[
+            rcss.position.absolute,
+            rcss.top(`50%`),
+            rcss.left(0),
+            rcss.height("100%"),
+            rcss.maxHeight(48),
+            rcss.flex.row,
+            rcss.py(8),
+            rcss.px(4),
+            {
+              transform: `translateX(0px) translateY(-50%) !important`,
+              background: "rgba(0, 0, 0, 0.25)",
+              cursor: "col-resize",
+            },
+          ]}
+        >
+          <div
+            css={[
+              {
+                borderRight: `solid 2px white`,
+              },
+            ]}
+          />
+        </motion.div>
+      ) : null}
+
+      {img.updating ? (
+        <motion.div
+          drag="y"
+          dragConstraints={dragRef}
+          dragElastic={false}
+          dragMomentum={false}
+          onDrag={dragTop}
+          css={[
+            rcss.position.absolute,
+            rcss.left(`50%`),
+            rcss.top(0),
+            rcss.width("100%"),
+            rcss.maxWidth(48),
+            rcss.flex.column,
+            rcss.px(8),
+            rcss.py(4),
+            {
+              transform: `translateY(0px) translateX(-50%) !important`,
+              background: "rgba(0, 0, 0, 0.25)",
+              cursor: "row-resize",
+            },
+          ]}
+        >
+          <div
+            css={[
+              {
+                borderBottom: `solid 2px white`,
+              },
+            ]}
+          />
+        </motion.div>
+      ) : null}
+
+      {img.updating ? (
+        <motion.div
+          drag="x"
+          dragConstraints={dragRef}
+          dragElastic={false}
+          dragMomentum={false}
+          onDrag={dragRight}
+          css={[
+            rcss.position.absolute,
+            rcss.top("50%"),
+            rcss.right(0),
+            rcss.height("100%"),
+            rcss.maxHeight(48),
+            rcss.flex.row,
+            rcss.py(8),
+            rcss.px(4),
+            {
+              transform: `translateX(0px) translateY(-50%) !important`,
+              background: "rgba(0, 0, 0, 0.25)",
+              cursor: "col-resize",
+            },
+          ]}
+        >
+          <div
+            css={[
+              {
+                borderRight: `solid 2px white`,
+              },
+            ]}
+          />
+        </motion.div>
+      ) : null}
+
+      {img.updating ? (
+        <motion.div
+          drag="y"
+          dragConstraints={dragRef}
+          dragElastic={false}
+          dragMomentum={false}
+          onDrag={dragBottom}
+          css={[
+            rcss.position.absolute,
+            rcss.left(`50%`),
+            rcss.bottom(0),
+            rcss.width("100%"),
+            rcss.maxWidth(48),
+            rcss.flex.column,
+            rcss.px(8),
+            rcss.py(4),
+            {
+              transform: `translateY(0px) translateX(-50%) !important`,
+              background: "rgba(0, 0, 0, 0.25)",
+              cursor: "row-resize",
+            },
+          ]}
+        >
+          <div
+            css={[
+              {
+                borderBottom: `solid 2px white`,
+              },
+            ]}
+          />
+        </motion.div>
+      ) : null}
+    </motion.div>
   );
 }
 
@@ -330,13 +708,13 @@ function TextBoxSettingComponent({
             </View>
 
             <View css={[rcss.rowWithGap(8)]}>
-              <Text variant="small">Width</Text>
+              <Text variant="small">Rotate</Text>
               <input
                 type="range"
                 min={0}
-                max={100}
-                value={box.width}
-                onChange={(e) => updateAttr("width", Number(e.target.value))}
+                max={360}
+                value={box.rotate}
+                onChange={(e) => updateAttr("rotate", Number(e.target.value))}
                 css={rcss.flex.grow(1)}
               />
             </View>
@@ -470,12 +848,18 @@ function ImageSettingComponent({
         rcss.border({
           color: "backgroundHigher",
         }),
+        rcss.p(8),
+        rcss.colWithGap(8),
       ]}
     >
-      <View
-        css={[rcss.flex.row, rcss.rowWithGap(8), rcss.align.start, rcss.p(8)]}
-      >
-        <Text css={rcss.flex.grow(1)}>{img.name}</Text>
+      <View css={[rcss.flex.row, rcss.rowWithGap(8), rcss.align.center]}>
+        <Text
+          css={{
+            flex: "1 1 0",
+          }}
+        >
+          {img.name}
+        </Text>
         <IconButton
           onClick={() => updateAttr("updating", !img.updating)}
           alt="Toggle"
@@ -487,46 +871,20 @@ function ImageSettingComponent({
 
       {!img.updating ? null : (
         <View css={[rcss.flex.column, rcss.colWithGap(8)]}>
-          <View css={[rcss.flex.column, rcss.colWithGap(8), rcss.p(8)]}>
-            <View css={[rcss.rowWithGap(8)]}>
-              <Text variant="small">Width</Text>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={img.width}
-                onChange={(e) => updateAttr("width", Number(e.target.value))}
-                css={rcss.flex.grow(1)}
-              />
-            </View>
-
-            <View css={[rcss.rowWithGap(8)]}>
-              <Text variant="small">Height</Text>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={img.height}
-                onChange={(e) => updateAttr("height", Number(e.target.value))}
-                css={rcss.flex.grow(1)}
-              />
-            </View>
-          </View>
-          <View
-            css={[
-              rcss.flex.row,
-              rcss.rowWithGap(8),
-              rcss.p(8),
-              rcss.border({
-                direction: "top",
-                color: "backgroundHigher",
-              }),
-              rcss.justify.end,
-            ]}
-          >
+          <View css={[rcss.rowWithGap(8), rcss.align.center]}>
+            <Text variant="small">Rotate</Text>
+            <input
+              type="range"
+              min={0}
+              max={360}
+              value={img.rotate}
+              onChange={(e) => updateAttr("rotate", Number(e.target.value))}
+              css={rcss.flex.grow(1)}
+            />
             <Button
               text="Delete"
               colorway="negative"
+              small
               onClick={() => {
                 setTextBoxes((boxes) => boxes.filter((_, i) => index !== i));
               }}
@@ -565,6 +923,9 @@ function EditorCanvas({
         src={imageUrl}
         css={[rcss.width("100%"), rcss.height("100%")]}
         ref={motionConstraint}
+        onClick={() =>
+          setTextBoxes((boxes) => boxes.map((b) => ({ ...b, updating: false })))
+        }
       />
       {textBoxes.map((box, index) =>
         box.type === "textbox" ? (
@@ -572,22 +933,16 @@ function EditorCanvas({
             key={index}
             parentRef={innerRef}
             box={box}
-            updateBox={(b: TextBox) =>
-              setTextBoxes(
-                textBoxes.map((original, i) => (i === index ? b : original))
-              )
-            }
+            setTextBoxes={setTextBoxes}
+            index={index}
           />
         ) : (
           <ImageDragComponent
             key={index}
             parentRef={innerRef}
             img={box}
-            updateImg={(b: Image) =>
-              setTextBoxes(
-                textBoxes.map((original, i) => (i === index ? b : original))
-              )
-            }
+            setTextBoxes={setTextBoxes}
+            index={index}
           />
         )
       )}
@@ -631,6 +986,7 @@ export default function MemeEditor() {
   ]);
 
   const canvasRef = useRef<HTMLDivElement>(null);
+  const fileUploadRef = useRef<HTMLInputElement>(null);
 
   if (meme) {
     const { title, imageUrl } = meme;
@@ -653,7 +1009,7 @@ export default function MemeEditor() {
             textStyle: "regular",
             rotate: 0,
             type: "textbox",
-            updating: true
+            updating: true,
           },
         ]);
       }
@@ -661,7 +1017,7 @@ export default function MemeEditor() {
 
     const download = async () => {
       if (canvasRef.current) {
-        setTextBoxes(textBoxes.map(b => ({ ...b, updating: false })));
+        setTextBoxes(textBoxes.map((b) => ({ ...b, updating: false })));
         const canvas = await html2canvas(canvasRef.current, {
           allowTaint: true,
           useCORS: true,
@@ -680,7 +1036,7 @@ export default function MemeEditor() {
 
     const exportToRepl = async () => {
       if (canvasRef.current) {
-        setTextBoxes(textBoxes.map(b => ({ ...b, updating: false })));
+        setTextBoxes(textBoxes.map((b) => ({ ...b, updating: false })));
         const canvas = await html2canvas(canvasRef.current, {
           allowTaint: true,
           useCORS: true,
@@ -697,7 +1053,7 @@ export default function MemeEditor() {
 
     const copyImage = async () => {
       if (canvasRef.current) {
-        setTextBoxes(textBoxes.map(b => ({ ...b, updating: false })));
+        setTextBoxes(textBoxes.map((b) => ({ ...b, updating: false })));
         const canvas = await html2canvas(canvasRef.current, {
           allowTaint: true,
           useCORS: true,
@@ -715,29 +1071,30 @@ export default function MemeEditor() {
     };
 
     const addImage = (e: ChangeEvent<HTMLInputElement>) => {
-      messages.showConfirm("Uploaded, firing");
       if (!e.target.files || !e.target.files[0]) return;
 
       const fileReader = new FileReader();
 
       fileReader.addEventListener("load", function (evt) {
-        messages.showConfirm("Loading");
         const res = evt.target?.result;
 
         if (res && evt.target && e.target.files?.[0]) {
-          messages.showConfirm("E");
           const img = new Image();
           img.onload = () => {
-            messages.showConfirm("AAAAA");
+            const greater = img.width > img.height ? "width" : "height";
+
             const newImage: Image = {
               type: "image",
               name: e.target.files?.[0].name || "image",
               rotate: 0,
               src: res,
-              width: 50,
-              height: 50,
+              width: greater === "width" ? 50 : (img.width / img.height) * 50,
+              height: greater === "height" ? 50 : (img.height / img.width) * 50,
             };
             setTextBoxes([...textBoxes, newImage]);
+            if (fileUploadRef.current?.value) {
+              fileUploadRef.current.value = "";
+            }
           };
           img.src = evt.target.result as string;
         }
@@ -762,7 +1119,7 @@ export default function MemeEditor() {
         >
           <Button
             text="Back"
-            iconLeft={<ArrowLeft />}
+            iconLeft={<ChevronLeftIcon />}
             onClick={() => setMeme(null)}
           />
 
@@ -852,6 +1209,7 @@ export default function MemeEditor() {
                       type="file"
                       accept="image/png, image/jpg, image/jpeg"
                       onChange={addImage}
+                      ref={fileUploadRef}
                     />
                   </label>
                 </View>

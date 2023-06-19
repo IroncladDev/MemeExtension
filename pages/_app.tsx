@@ -8,7 +8,7 @@ import {
   useThemeValues,
 } from "@replit/extensions-react";
 import { useAtom } from "jotai";
-import { SmolScreen, NonExtension, Loading } from "application/screens";
+import { SmolScreen, Loading } from "application/screens";
 import Head from "next/head";
 import "styles/globals.css";
 
@@ -55,9 +55,9 @@ ${mappedThemeValues.join("\n")}
             <Component {...pageProps} />
             <SmolScreen />
           </>
-        ) : null}
-        {status === "loading" ? <Loading /> : null}
-        {status === "error" ? <NonExtension /> : null}
+        ) : (
+          <Loading />
+        )}
       </Surface>
     </>
   );

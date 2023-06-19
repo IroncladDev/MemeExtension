@@ -8,11 +8,9 @@ import {
   interactive,
 } from "application/rui";
 import { global } from "application/state";
-import {
-  ChevronDoubleLeft,
-  ChevronLeft,
-  ChevronRight,
-} from "application/ui/icons";
+import ChevronDoubleLeft from "application/ui/icons/ChevronDoubleLeft";
+import ChevronLeft from "application/ui/icons/ChevronLeft";
+import ChevronRight from "application/ui/icons/ChevronRight";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 
