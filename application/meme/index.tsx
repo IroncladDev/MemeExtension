@@ -926,6 +926,7 @@ function EditorCanvas({
         onClick={() =>
           setTextBoxes((boxes) => boxes.map((b) => ({ ...b, updating: false })))
         }
+        draggable="false"
       />
       {textBoxes.map((box, index) =>
         box.type === "textbox" ? (
