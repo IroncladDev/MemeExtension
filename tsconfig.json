@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "ES2022",
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "module": "esnext",
+    "target": "esnext",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "incremental": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "jsxImportSource": "@emotion/react"
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node",
+    "require": [
+      "tsconfig-paths/register"
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

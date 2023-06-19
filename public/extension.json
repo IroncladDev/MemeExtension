@@ -1,0 +1,42 @@
+{
+  "name": "Meme Extension",
+  "description": "Easily generate memes from imgflip with this extension",
+  "version": "dontcry",
+  "tags": ["stream", "repl"],
+  "icon": "/icon.png",
+  "website": "https://tv.repl.page/",
+  "longDescription": "yues",
+  "tools": [
+
+    {
+      name: "Extension",
+      icon: "/icon.png",
+      handler: "/"
+    }
+
+  ],
+  "scopes": [
+    {
+      "name": "read",
+      "reason": "Reads the current file the user is in"
+    },
+    {
+      "name": "write-exec",
+      "reason": "Write to any file in your Repl and execute any code"
+    },
+
+    {
+    name: "experimental-api",
+    reason: "Use experimental APIs that may be unstable, change in behavior, or be removed entirely"
+  }
+  ],
+	"coverImages": [
+
+	  {
+	    path: "/icon.png",
+	    label: "preview of extension"
+	  }
+
+	],
+	"fileHandlers": []
+}

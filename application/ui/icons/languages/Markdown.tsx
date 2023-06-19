@@ -1,0 +1,22 @@
+// @generated using 'yarn generate:icons'
+// from https://www.figma.com/file/ECpK9PAYqlU84n8MlhnaXV/RUI-Design-System?node-id=652%3A14008
+
+import React from "react";
+import Icon, { Props as IconProps } from "../LanguageIcon";
+
+export default function MarkdownIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M2.58654 6.05769C2.29446 6.05769 2.05769 6.29446 2.05769 6.58654V16.9519C2.05769 17.244 2.29446 17.4808 2.58654 17.4808H21.4135C21.7055 17.4808 21.9423 17.244 21.9423 16.9519V6.58654C21.9423 6.29446 21.7055 6.05769 21.4135 6.05769H2.58654ZM1 6.58654C1 5.71032 1.71032 5 2.58654 5H21.4135C22.2897 5 23 5.71032 23 6.58654V16.9519C23 17.8281 22.2897 18.5385 21.4135 18.5385H2.58654C1.71032 18.5385 1 17.8281 1 16.9519V6.58654Z"
+        fill="#808080"
+      />
+      <path
+        d="M4.17308 15.3654V8.17309H6.28846L8.40384 10.8173L10.5192 8.17309H12.6346V15.3654H10.5192V11.2404L8.40384 13.8846L6.28846 11.2404V15.3654H4.17308ZM17.3942 15.3654L14.2212 11.875H16.3365V8.17309H18.4519V11.875H20.5673L17.3942 15.3654Z"
+        fill="#808080"
+      />
+    </Icon>
+  );
+}

@@ -1,0 +1,17 @@
+// @generated using 'yarn generate:icons'
+// from https://www.figma.com/file/ECpK9PAYqlU84n8MlhnaXV/RUI-Design-System?node-id=237%3A9468
+
+import React from "react";
+import Icon, { Props as IconProps } from "./Icon";
+
+export default function ChevronDoubleRightIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M18.5303 12.5303C18.8232 12.2374 18.8232 11.7626 18.5303 11.4697L13.5303 6.46967C13.2374 6.17678 12.7626 6.17678 12.4697 6.46967C12.1768 6.76256 12.1768 7.23744 12.4697 7.53033L16.9393 12L12.4697 16.4697C12.1768 16.7626 12.1768 17.2374 12.4697 17.5303C12.7626 17.8232 13.2374 17.8232 13.5303 17.5303L18.5303 12.5303ZM6.53033 17.5303L11.5303 12.5303C11.8232 12.2374 11.8232 11.7626 11.5303 11.4697L6.53033 6.46967C6.23744 6.17678 5.76256 6.17678 5.46967 6.46967C5.17678 6.76256 5.17678 7.23744 5.46967 7.53033L9.93934 12L5.46967 16.4697C5.17678 16.7626 5.17678 17.2374 5.46967 17.5303C5.76256 17.8232 6.23744 17.8232 6.53033 17.5303Z"
+      />
+    </Icon>
+  );
+}

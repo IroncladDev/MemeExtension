@@ -1,0 +1,16 @@
+// @generated using 'yarn generate:icons'
+// from https://www.figma.com/file/ECpK9PAYqlU84n8MlhnaXV/RUI-Design-System?node-id=1199%3A18609
+
+import React from "react";
+import Icon, { Props as IconProps } from "../LanguageIcon";
+
+export default function CsvIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path
+        d="M2.59961 2.9021V21.098H21V2.9021H2.59961ZM5.56412 6.6844H10.7776V8.01332H5.56412V6.6844ZM12.7198 6.6844H17.9333V8.01332H12.7198V6.6844ZM5.56412 9.75113H10.7776V11.0801H5.56412V9.75113ZM12.7198 9.75113H17.9333V11.0801H12.7198V9.75113ZM5.56412 12.8179H10.7776V14.1468H5.56412V12.8179ZM12.7198 12.8179H17.9333V14.1468H12.7198V12.8179ZM5.56412 15.8846H10.7776V17.2135H5.56412V15.8846ZM12.7198 15.8846H17.9333V17.2135H12.7198V15.8846Z"
+        fill="#009118"
+      />
+    </Icon>
+  );
+}
