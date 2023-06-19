@@ -1,15 +1,15 @@
 {
-  "name": "Meme Extension",
-  "description": "Easily generate memes from imgflip with this extension",
+  "name": "Meme Generator",
+  "description": "The Meme Generator Extension allows you to add captions and images to memes directly from the workspace from imgflip",
   "version": "dontcry",
   "tags": ["stream", "repl"],
   "icon": "/icon.png",
   "website": "https://tv.repl.page/",
-  "longDescription": "yues",
+  "longDescription": null,
   "tools": [
 
     {
-      name: "Extension",
+      name: "Meme Generator",
       icon: "/icon.png",
       handler: "/"
     }
@@ -33,7 +33,7 @@
 	"coverImages": [
 
 	  {
-	    path: "/icon.png",
+	    path: "/cover.png",
 	    label: "preview of extension"
 	  }
 
